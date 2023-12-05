@@ -1005,6 +1005,7 @@ pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"""
 
+
 def get_first_and_last_number(str):
     filtered_char = filter(lambda x: x.isdigit(), str)
 
@@ -1014,7 +1015,7 @@ def get_first_and_last_number(str):
         return int(result + result)
     else:
         return int(result[0] + result[-1])
-    
+
 
 def get_sum_of_all_values(input):
     arr = input.split('\n')
@@ -1023,16 +1024,15 @@ def get_sum_of_all_values(input):
 
     return sum(list(get_number_only))
 
+
 print(get_sum_of_all_values(input_data))
 
 # part two
-example_two = """two1nine
-eightwothree
-abcone2threexyz
-xtwone3four
-4nineeightseven2
-zoneight234
-7pqrstsixteen"""
+example_two = """1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet"""
+
 
 def get_real_value(str):
     number_mapping = {
@@ -1052,27 +1052,27 @@ def get_real_value(str):
         if num_str in str:
             index_value[str.find(num_str)] = number_mapping[num_str]
             index_value[str.rfind(num_str)] = number_mapping[num_str]
-    
+
     for num in str:
         if num.isdigit():
             index_value[str.find(num)] = num
+            index_value[str.rfind(num)] = num
 
     first_num_index = min(index_value.keys())
     last_num_index = max(index_value.keys())
 
-    first_num = index_value[first_num_index] 
-    last_num = index_value[last_num_index] 
+    first_num = index_value[first_num_index]
+    last_num = index_value[last_num_index]
 
-    print(first_num, last_num)
-    return int(first_num + last_num) if first_num and last_num else 0
+    return int(first_num + last_num)
 
 
 def get_sum_of_real_all_values(input):
     arr = input.split('\n')
 
-    number_only_arr = map(get_real_value, arr)
+    number_only_arr = list(map(get_real_value, arr))
 
-    print(list(number_only_arr))
-    return sum(list(number_only_arr))
+    return sum(number_only_arr)
+
 
 print(get_sum_of_real_all_values(input_data))
