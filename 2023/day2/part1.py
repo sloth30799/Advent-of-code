@@ -24,18 +24,13 @@ def get_possible_games_no():
     with open('./data.txt', 'r') as file:
         lines = file.readlines()
 
-        result = list(map(check_game, lines))
-
-        result_one = list(filter(None, result))
+        nums = list(map(check_game, lines))
+        result = 0
         
-        return sum(result_one)
+        for i, num in enumerate(nums):
+            if num is None:
+                result += (i + 1)
 
-def sum_of_100_id():
-    result = 0
-    for i in range(100):
-        result += i + 1
+        return result
 
-    print(result)
-    return result
-
-print(sum_of_100_id() - get_possible_games_no())
+print(get_possible_games_no())
