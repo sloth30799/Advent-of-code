@@ -8,7 +8,7 @@ def map_s_to_d(maps, values):
         for v in values:
             if v >= min_range and v <= max_range:
                 source_difference = v - m[1]
-                destination_value =  m[0] + source_difference
+                destination_value = m[0] + source_difference
 
                 updated_values.setdefault(v, destination_value)
 
@@ -20,7 +20,7 @@ def map_s_to_d(maps, values):
     return destination_values
 
 
-def txt_to_python_object():
+def get_lowest_location():
     with open('./data.txt') as file:
         lines = [line.strip() for line in file.readlines()]
 
@@ -33,7 +33,7 @@ def txt_to_python_object():
             key, values = line.split(':')
             current_key = key.strip().lower()
             current_map = list(map(int, values.strip().split()))
-        elif line.strip():  
+        elif line.strip():
             current_map.append(list(map(int, line.strip().split())))
         else:
             data[current_key] = current_map
@@ -48,4 +48,5 @@ def txt_to_python_object():
 
     print(min(current_values))
 
-txt_to_python_object()
+
+get_lowest_location()
