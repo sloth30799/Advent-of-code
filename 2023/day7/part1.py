@@ -1,56 +1,48 @@
-file = open("./example.txt").read().strip().split("\n")
-lines = list(map(lambda x: x.split(' '), file))
+import re
+from functools import cmp_to_key
+from collections import Counter
 
-strengths = ['A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2']
+with open('./input.txt', 'r') as f:
+    puzzle_input = f.read()
 
-def hand_type(hand):
-    hand_set = set(hand)
+def get_type(hand):
+    counts = sorted(Counter(hand).values(), reverse=True)
+    if counts[0] == 5:
+        return 6
+    if counts[0] == 4:
+        return 5
+    if counts[0] == 3 and counts[1] == 2:
+        return 4
+    if counts[0] == 3:
+        return 3
+    if counts[0] == 2 and counts[1] == 2:
+        return 2
+    if counts[0] == 2:
+        return 1
+    return 0  
 
-    types = { 1: 'Five of a kind', 4: 'One pair', 5: 'High card' }
+def compare(a, b):
+    cards = '23456789TJQKA'
+    type_a = get_type(a[0])
+    type_b = get_type(b[0])
 
-    if len(hand_set) == 2:
-        char_count = {}
-        for char in hand:
-            char_count[char] = char_count.get(char, 0) + 1
+    if type_a > type_b:
+        return 1
+    if type_a < type_b:
+        return -1
+    for card_a, card_b in zip(a[0], b[0]):
+        if card_a == card_b:
+            continue
+        a_wins = (cards.index(card_a) > cards.index(card_b))
+        return 1 if a_wins else -1
 
-        if len(char_count.keys()) == 2:
-            return 'Full house'
-        else:
-            return 'Three of a kind'
+def winning_total(puzzle_input):
+    regex = r'(\w{5}) (\d+)'
+    hands = re.findall(regex, puzzle_input)
+    hands.sort(key=cmp_to_key(compare))
+    total = 0
+    for rank, (_, bid) in enumerate(hands, start=1):
+        total += rank * int(bid)
+    return total
 
-    elif len(hand_set) == 3:
-        char_count = {}
-        for char in hand:
-            char_count[char] = char_count.get(char, 0) + 1
-
-        count_of_twos = sum(value == 2 for value in char_count.values())
-
-        if count_of_twos == 2:
-            return "Two pair"
-        else:
-            return "Three of a kind"
-
-    return types[len(hand_set)]
-
-
-all_hands = {
-    'High card': [],
-    'One pair': [],
-    'Two pair': [],
-    'Three of a kind': [],
-    'Full house': [],
-    'Four of a kind': [],
-    'Five of a kind': []
-}
-
-for line in lines:
-    all_hands[hand_type(line[0])].append(line)
-
-print(all_hands)
-
-for key in all_hands.keys():
-    for i in all_hands[key]:
-        print(i)
-
-# check strength and sort
-# calculate
+print(winning_total(puzzle_input))
