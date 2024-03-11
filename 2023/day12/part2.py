@@ -1,46 +1,42 @@
-from itertools import product
-import timeit
+cache = {}
 
-with open('./example.txt', 'r') as file:
-    lines = [line.strip().split(' ') for line in file.readlines()]
+with open('./input.txt', 'r')as file:
+    lines = file.read().split('\n')
 
+def count(hot_spring, nums):
+    if hot_spring == "":
+        return 1 if nums == () else 0
+    
+    if nums == ():
+        return 0 if "#" in hot_spring else 1
+    
+    key = (hot_spring, nums)
 
-replacement_options = ['.', '#']
+    if key in cache:
+        return cache[key]
 
+    result = 0
 
-def get_possible_arrangements(line):
-    original_string = '?'.join([line[0]] * 5)
-    hash_counts = [int(i) for i in line[1].split(',')] * 5
+    if hot_spring[0] in '.?':
+        result += count(hot_spring[1:], nums)
 
-    needed_hash = sum(hash_counts) - original_string.count('#')
+    if hot_spring[0] in "#?":
+        if nums[0] <= len(hot_spring) and '.' not in hot_spring[:nums[0]] and (nums[0] == len(hot_spring) or hot_spring[nums[0]] != "#"):
+            result += count(hot_spring[nums[0] + 1:], nums[1:])
 
-    all_patterns = [''.join(p) for p in product(
-        replacement_options, repeat=original_string.count('?'))]
+    cache[key] = result
 
-    # Print the result
-    new_patterns = 0
-    for pattern in all_patterns:
-        if pattern.count('#') == needed_hash:
-            new_pattern = original_string
-            for char in pattern:
-                new_pattern = new_pattern.replace('?', char, 1)
+    return result
 
-            if list(map(len, new_pattern.replace('.', ' ').split())) == hash_counts:
-                new_patterns += 1
+total = 0
 
-    return new_patterns
+for line in lines:
+    hot_spring, nums = line.split()
+    nums = tuple(map(int, nums.split(',')))
 
+    hot_spring = "?".join([hot_spring] * 5)
+    nums *= 5
 
-def total_possible_arrangements():
-    total = 0
-    for line in lines:
-        total += get_possible_arrangements(line)
+    total += count(hot_spring, nums)
 
-    print(total)
-
-
-total_possible_arrangements()
-# elapsed_time = timeit.timeit(total_possible_arrangements, number=1)
-
-# # Print the elapsed time
-# print(f"Elapsed time: {elapsed_time} seconds")
+print(total)
