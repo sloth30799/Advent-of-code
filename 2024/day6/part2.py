@@ -11,71 +11,57 @@ right_turns = {
     (0, -1): (-1, 0)
 }
 
-walked_tiles = set()
-visited_positions = {}
-ob_positions = 0
-
 
 def find_start():
     for row_index, row in enumerate(content):
         for col_index, value in enumerate(row):
             if value == '^':
-                current_point[0] = row_index
-                current_point[1] = col_index
-                walked_tiles.add((tuple(current_point), current_direction))
-                return True
-    return False
+                return [row_index, col_index], (-1, 0)
+    return None, None
 
 
-def simulate_walk(point, direction):
-    visited_path = set()
-    c_point = list(point)
-    c_direction = direction
+def simulate_patrol(map_with_obstruction, start_point, start_direction):
+    current_point = start_point[:]
+    current_direction = start_direction
+    visited_states = set()
 
     while True:
-        next_point = (c_point[0] + c_direction[0], c_point[1] + c_direction[1])
+        state = (current_point[0], current_point[1], current_direction)
+        if state in visited_states:
+            return True  # Loop detected
+        visited_states.add(state)
 
-        if next_point[0] < 0 or next_point[0] >= len(content) or \
-           next_point[1] < 0 or next_point[1] >= len(content[next_point[0]]):
-            return False
+        next_point = [current_point[0] + current_direction[0],
+                      current_point[1] + current_direction[1]]
 
-        if (next_point, c_direction) in visited_path:
-            return False
-        visited_path.add((next_point, c_direction))
+        if (-1 in next_point or
+            next_point[0] >= len(map_with_obstruction) or
+                next_point[1] >= len(map_with_obstruction[next_point[0]])):
+            return False  # Guard leaves the map
 
-        if content[next_point[0]][next_point[1]] == '#':
-            c_direction = right_turns[c_direction]
-        else:
-            c_point = list(next_point)
-
-        if (next_point, c_direction) in walked_tiles:
-            return True
-
-
-def walk():
-    global current_direction, current_point, ob_positions
-
-    while True:
-        next_point = (current_point[0] + current_direction[0],
-                      current_point[1] + current_direction[1])
-
-        if next_point[0] < 0 or next_point[0] >= len(content) or \
-           next_point[1] < 0 or next_point[1] >= len(content[next_point[0]]):
-            break
-
-        if content[next_point[0]][next_point[1]] == '#':
+        if map_with_obstruction[next_point[0]][next_point[1]] == '#':
             current_direction = right_turns[current_direction]
         else:
-            current_point[0], current_point[1] = next_point
-            if content[current_point[0]][current_point[1]] in '.^':
-                walked_tiles.add((tuple(current_point), current_direction))
-
-                ob_direction = right_turns[current_direction]
-                if simulate_walk(tuple(current_point), ob_direction):
-                    ob_positions += 1
+            current_point = next_point
 
 
-if find_start():
-    walk()
+def count_valid_obstructions():
+    start_point, start_direction = find_start()
+    valid_positions = 0
 
-print(ob_positions)
+    for row_index, row in enumerate(content):
+        for col_index, value in enumerate(row):
+            if value == '.':
+                # Place obstruction temporarily
+                map_with_obstruction = [list(row) for row in content]
+                map_with_obstruction[row_index][col_index] = '#'
+
+                if simulate_patrol(map_with_obstruction, start_point, start_direction):
+                    valid_positions += 1
+
+    return valid_positions
+
+
+if __name__ == "__main__":
+    result = count_valid_obstructions()
+    print(result)
