@@ -12,7 +12,7 @@ right_turns = {
 }
 
 walked_tiles = set()
-memo_positions = {}
+visited_positions = {}
 ob_positions = 0
 
 
@@ -22,61 +22,56 @@ def find_start():
             if value == '^':
                 current_point[0] = row_index
                 current_point[1] = col_index
-
-                walked_tiles.add(tuple(current_point))
-
+                walked_tiles.add((tuple(current_point), current_direction))
                 return True
-
-    return None
+    return False
 
 
 def simulate_walk(point, direction):
-    key = f"{point}|{direction}"
-
-    if key in memo_positions:
-        return memo_positions[tuple(point, direction)]
-
-    start_point = c_point = point
+    visited_path = set()
+    c_point = list(point)
     c_direction = direction
 
     while True:
-        next_point = [c_point[0] + c_direction[0],
-                      c_point[1] + c_direction[1]]
+        next_point = (c_point[0] + c_direction[0], c_point[1] + c_direction[1])
 
-        if (-1 in next_point) or len(content) == next_point[0] or len(content[next_point[0]]) == next_point[1]:
-            memo_positions[key] = False
+        if next_point[0] < 0 or next_point[0] >= len(content) or \
+           next_point[1] < 0 or next_point[1] >= len(content[next_point[0]]):
             return False
 
-        if next_point == start_point:
-            memo_positions[key] = True
-            return True
+        if (next_point, c_direction) in visited_path:
+            return False
+        visited_path.add((next_point, c_direction))
 
         if content[next_point[0]][next_point[1]] == '#':
             c_direction = right_turns[c_direction]
         else:
-            c_point = next_point
+            c_point = list(next_point)
+
+        if (next_point, c_direction) in walked_tiles:
+            return True
 
 
 def walk():
-    global current_direction, current_point, result, ob_positions
+    global current_direction, current_point, ob_positions
 
     while True:
-        next_point = [current_point[0] + current_direction[0],
-                      current_point[1] + current_direction[1]]
+        next_point = (current_point[0] + current_direction[0],
+                      current_point[1] + current_direction[1])
 
-        if (-1 in next_point) or len(content) == next_point[0] or len(content[next_point[0]]) == next_point[1]:
-            break  # Exit the loop
+        if next_point[0] < 0 or next_point[0] >= len(content) or \
+           next_point[1] < 0 or next_point[1] >= len(content[next_point[0]]):
+            break
 
         if content[next_point[0]][next_point[1]] == '#':
             current_direction = right_turns[current_direction]
         else:
-            current_point = next_point
+            current_point[0], current_point[1] = next_point
             if content[current_point[0]][current_point[1]] in '.^':
-                walked_tiles.add(tuple(current_point))
+                walked_tiles.add((tuple(current_point), current_direction))
 
                 ob_direction = right_turns[current_direction]
-
-                if simulate_walk(current_point, ob_direction):
+                if simulate_walk(tuple(current_point), ob_direction):
                     ob_positions += 1
 
 
